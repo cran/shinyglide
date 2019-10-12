@@ -1,8 +1,9 @@
 # shinyglide
 
 <!-- badges: start -->
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://www.tidyverse.org/lifecycle/#stable)
 [![CRAN status](https://www.r-pkg.org/badges/version-ago/shinyglide)](https://cran.r-project.org/package=shinyglide)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/shinyglide)](https://cran.r-project.org/package=shinyglide)
 [![Travis build status](https://travis-ci.org/juba/shinyglide.svg?branch=master)](https://travis-ci.org/juba/shinyglide)
 <!-- badges: end -->
 
@@ -30,7 +31,13 @@ The package is still in experimental stage, breaking changes could happen.
 
 ## Installation
 
-The package is not on CRAN yet. You can install the development version with :
+You can install the stable version with :
+
+```r
+install.packages("shinyglide")
+```
+
+And the development version with :
 
 ```r
 remotes::install_github("juba/shinyglide")

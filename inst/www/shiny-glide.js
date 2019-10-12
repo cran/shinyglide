@@ -1,17 +1,3 @@
-// Source : https://stackoverflow.com/questions/38881301/observe-mutations-on-a-target-node-that-doesnt-exist-yet
-function waitForAddedNode(params) {
-  new MutationObserver(function (mutations) {
-    var el = document.getElementsByClassName(params.class)[0];
-    if (el) {
-      this.disconnect();
-      params.done(el);
-    }
-  }).observe(params.parent || document, {
-    subtree: !!params.recursive,
-    childList: true,
-  });
-}
-
 
 class ShinyGlide {
 
@@ -47,25 +33,25 @@ class ShinyGlide {
       $(this.prev_detector).on('hide', () => {
         this.prev_control.setAttribute("disabled", "disabled");
         this.prev_control.classList.add("disabled");
-      })
+      });
       $(this.prev_detector).on('show', () => {
         this.prev_control.removeAttribute("disabled");
         this.prev_control.classList.remove("disabled");
-      })
+      });
       $(this.next_detector).on('hide', () => {
         this.next_control.setAttribute("disabled", "disabled");
         this.next_control.classList.add("disabled");
-      })
+      });
       $(this.next_detector).on('show', () => {
         this.next_control.removeAttribute("disabled");
         this.next_control.classList.remove("disabled");
-      })
+      });
       // Hide controls
       if (this.disable_type == "hide") {
-        $(this.prev_detector).on('hide', () => { $(this.prev_control).hide(); })
-        $(this.prev_detector).on('show', () => { $(this.prev_control).show(); })
-        $(this.next_detector).on('hide', () => { $(this.next_control).hide(); })
-        $(this.next_detector).on('show', () => { $(this.next_control).show(); })
+          $(this.prev_detector).on('hide', () => { $(this.prev_control).hide(); });
+          $(this.prev_detector).on('show', () => { $(this.prev_control).show(); });
+          $(this.next_detector).on('hide', () => { $(this.next_control).hide(); });
+          $(this.next_detector).on('show', () => { $(this.next_control).show(); });
       }
     }
 
@@ -85,7 +71,7 @@ class ShinyGlide {
             move.direction = null;
           }
         }
-        if (this.prev_detector.hasAttribute("disabled")) {
+        if (this.prev_control.hasAttribute("disabled")) {
           if (move.direction == "<") {
             move.direction = null;
           }
@@ -97,8 +83,8 @@ class ShinyGlide {
           } else {
             slide.classList.remove("shinyglide-hidden");
           }
-        })
-      })
+        });
+      });
 
       glide.on('run.after', move => {
         this.update_controls();
@@ -117,10 +103,10 @@ class ShinyGlide {
       this.update_labels(this.slides[0]);
 
       this.next_control.addEventListener("click", event => {
-        if (!this.next_control.hasAttribute("disabled")) { this.glide.go(">") };
+          if (!this.next_control.hasAttribute("disabled")) { this.glide.go(">"); };
       });
       this.prev_control.addEventListener("click", event => {
-        if (!this.prev_control.hasAttribute("disabled")) { this.glide.go("<") };
+          if (!this.prev_control.hasAttribute("disabled")) { this.glide.go("<"); };
       });
 
       this.init_detectors();
@@ -270,32 +256,45 @@ class ShinyGlide {
 
   }
 
+// Only run setup once
+var shinyglide_setup_has_run = false;
 
 
-$(document).ready(function () {
+function setup() {
 
-  $(".shinyglide").each(function(index) {
-    new ShinyGlide(this);
-  });
+    if (shinyglide_setup_has_run) { return; }
 
-  // If the glide is in a shiny modal, wait for it to
-  // be shown otherwise dimensions are incorrect
-  var modal_wrapper = document.getElementById('shiny-modal-wrapper');
-  if (modal_wrapper !== null) {
-    waitForAddedNode({
-      class: 'shinyglide',
-      parent: modal_wrapper,
-      recursive: false,
-      done: function (el) {
-        var shiny_modal = $(modal_wrapper).find("#shiny-modal");
-        shiny_modal.on("shown.bs.modal", () => {
-          new ShinyGlide(el);
-          shiny_modal.off("shown.bs.modal");
-        })
-      }
-    })
-  }
+    $(".shinyglide").each(function(index) {
+	new ShinyGlide(this);
+    });
 
+    // If the glide is in a shiny modal and it is not shown yet,
+    // wait for it to be shown otherwise dimensions are incorrect
+    $(document).on('shiny:idle', e => {
+	var modal_wrapper = document.getElementById('shiny-modal-wrapper');
+	var shiny_modal = $(modal_wrapper).find("#shiny-modal");
+	shiny_modal.on("shown.bs.modal", () => {
+	    shiny_modal.find('.shinyglide').each(function(i, el)  {
+		new ShinyGlide(el);
+	    });
+	});
+    });
+
+    shinyglide_setup_has_run = true;
+    $(document).off("shiny:message");
+}
+
+
+// When an observer is running, the "ready" event is not fired when
+// this JavaScript is run, so we add a listener to shiny:message and
+// keep whichever comes first
+
+$(document).on("shiny:message", e => {
+    setup();
+});
+
+$(function () {
+    setup();
 });
 
 

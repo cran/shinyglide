@@ -1,8 +1,8 @@
 Package: shinyglide
 Type: Package
 Title: Glide Component for Shiny Applications
-Version: 0.1.1
-Date: 2019-07-01
+Version: 0.1.2
+Date: 2019-10-12
 Authors@R: c(
     person("Julien", "Barnier", 
            role=c("aut","cre"),
@@ -22,7 +22,7 @@ Suggests: knitr, rmarkdown
 LazyData: true
 RoxygenNote: 6.1.1
 NeedsCompilation: no
-Packaged: 2019-07-01 09:40:21 UTC; julien
+Packaged: 2019-10-12 16:22:38 UTC; julien
 Author: Julien Barnier [aut, cre]
 Repository: CRAN
-Date/Publication: 2019-07-10 12:20:40 UTC
+Date/Publication: 2019-10-12 17:00:03 UTC
