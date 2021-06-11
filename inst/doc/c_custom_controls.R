@@ -1,4 +1,4 @@
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  ui <- fluidPage(
 #    titlePanel("Basic shinyglide app"),
 #    glide(
@@ -24,16 +24,16 @@
 #  
 #  shinyApp(ui, server)
 
-## ----eval=FALSE----------------------------------------------------------
-#  controls <- glideControls(
-#    prevButton(class = "btn btn-warning"),
-#    tags$button(class = "btn btn-success next-screen")
-#  )
+## ----eval=FALSE---------------------------------------------------------------
+#  controls <-
 #  
 #  ui <- fluidPage(
 #    titlePanel("Basic shinyglide app"),
 #    glide(
-#      custom_controls = controls,
+#      custom_controls = glideControls(
+#        prevButton(class = "btn btn-warning"),
+#        tags$button(class = "btn btn-success next-screen")
+#      ),
 #  
 #      screen(
 #        p("Please choose a value for n :"),
@@ -54,7 +54,7 @@
 #  
 #  shinyApp(ui, server)
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  controls <- fluidRow(
 #    div(class="col-xs-6 text-right",
 #      prevButton(class = "btn btn-warning")
@@ -94,7 +94,7 @@
 #  
 #  shinyApp(ui, server)
 
-## ----eval = FALSE--------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  controls <- glideControls(
 #    list(
 #      prevButton(class = "btn btn-warning"),
@@ -133,7 +133,7 @@
 #  
 #  shinyApp(ui, server)
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  modal_controls <- glideControls(
 #        list(
 #          prevButton(),

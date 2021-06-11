@@ -4,13 +4,19 @@
 \alias{glide}
 \title{Glide component creation}
 \usage{
-glide(..., id = NULL, next_label = paste("Next",
-  shiny::icon("chevron-right", lib = "glyphicon")),
-  previous_label = paste(shiny::icon("chevron-left", lib = "glyphicon"),
-  "Back"), loading_label = span(span(class = "shinyglide-spinner"),
-  span("Loading")), loading_class = "loading",
-  disable_type = c("disable", "hide"), height = "100\%",
-  custom_controls = NULL, controls_position = c("bottom", "top"))
+glide(
+  ...,
+  id = NULL,
+  next_label = paste("Next", shiny::icon("chevron-right", lib = "glyphicon")),
+  previous_label = paste(shiny::icon("chevron-left", lib = "glyphicon"), "Back"),
+  loading_label = span(span(class = "shinyglide-spinner"), span("Loading")),
+  loading_class = "loading",
+  disable_type = c("disable", "hide"),
+  height = "100\%",
+  keyboard = TRUE,
+  custom_controls = NULL,
+  controls_position = c("bottom", "top")
+)
 }
 \arguments{
 \item{...}{content of the glide.}
@@ -32,6 +38,8 @@ when it is disabled by a condition.}
 
 \item{height}{height of the glide (something like "400px" or "100\%").}
 
+\item{keyboard}{set this to FALSE to disable keyboard navigation.}
+
 \item{custom_controls}{custom HTML or shiny tags to be used for the controls.
 If `NULL``, use the default ones.}
 
@@ -52,7 +60,7 @@ ui <- fixedPage(
       p("First screen.")
     ),
     screen(
-      p("Second screen."),
+      p("Second screen.")
     )
   )
 )

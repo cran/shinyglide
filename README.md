@@ -1,10 +1,10 @@
 # shinyglide
 
 <!-- badges: start -->
-[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://www.tidyverse.org/lifecycle/#stable)
+[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html)
 [![CRAN status](https://www.r-pkg.org/badges/version-ago/shinyglide)](https://cran.r-project.org/package=shinyglide)
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/shinyglide)](https://cran.r-project.org/package=shinyglide)
-[![Travis build status](https://travis-ci.org/juba/shinyglide.svg?branch=master)](https://travis-ci.org/juba/shinyglide)
+[![R build status](https://github.com/juba/shinyglide/workflows/R-CMD-check/badge.svg)](https://github.com/juba/shinyglide/actions)
 <!-- badges: end -->
 
 `shinyglide` is an R package which provides carousel-like or assistant-like components to [shiny](https://shiny.rstudio.com) applications, thanks to the [Glide](https://glidejs.com) JavaScript library.
@@ -16,8 +16,6 @@ It allows to create this sort of app ([live example](https://data.nozav.org/app/
 Or can be integrated into an existing app to create an "assistant-like" interface ([live example](https://data.nozav.org/app/shinyglide/03_modal/)):
 
 ![](man/figures/shinyglide_modal.gif)
-
-The package is still in experimental stage, breaking changes could happen.
 
 
 ## Features

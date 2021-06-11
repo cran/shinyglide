@@ -1,4 +1,4 @@
-## ----eval = FALSE--------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  ui <- fluidPage(
 #    titlePanel("App title"),
 #    glide(
@@ -6,7 +6,7 @@
 #    )
 #  )
 
-## ----eval = FALSE--------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  ui <- fluidPage(
 #    titlePanel("App title"),
 #    glide(
@@ -19,7 +19,7 @@
 #    )
 #  )
 
-## ----eval = FALSE--------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  ui <- fluidPage(
 #    titlePanel("Basic shinyglide app"),
 #    glide(
@@ -42,7 +42,7 @@
 #  
 #  shinyApp(ui, server)
 
-## ----eval = FALSE--------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  ui <- fluidPage(
 #    glide(
 #      id = "plot-glide",
@@ -70,13 +70,30 @@
 #  
 #  shinyApp(ui, server)
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  div(`data-glide-el`="controls",
 #    a(`data-glide-dir`="<", href="#", "Go back")
 #  )
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  div(`data-glide-el`="controls",
 #    tags$button(`data-glide-dir`="<<", href="#", "Back to start")
 #  )
+
+## ----eval=FALSE---------------------------------------------------------------
+#  ui <- fluidPage(
+#    glide(
+#      id = "myglide",
+#      screen(h1("First screen")),
+#      screen(h1("Second screen")),
+#      screen(h1("Third screen"))
+#    ),
+#    textOutput("index")
+#  )
+#  
+#  server <- function(input, output, session){
+#    output$index <- renderText(
+#      input$shinyglide_index_myglide
+#    )
+#  }
 

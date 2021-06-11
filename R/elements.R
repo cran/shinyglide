@@ -11,7 +11,8 @@
 #'     screen is still loading.
 #' @param disable_type either to "disable" or "hide" the next or back control
 #'     when it is disabled by a condition.
-#' @param height height of the glide (something like "400px" or "100\%").
+#' @param height height of the glide (something like "400px" or "100%").
+#' @param keyboard set this to FALSE to disable keyboard navigation.
 #' @param custom_controls custom HTML or shiny tags to be used for the controls.
 #'     If `NULL``, use the default ones.
 #' @param controls_position either to place the default or custom controls on "top"
@@ -31,7 +32,7 @@
 #'       p("First screen.")
 #'     ),
 #'     screen(
-#'       p("Second screen."),
+#'       p("Second screen.")
 #'     )
 #'   )
 #' )
@@ -54,6 +55,7 @@ glide <- function(...,
   loading_class = "loading",
   disable_type = c("disable", "hide"),
   height = "100%",
+  keyboard = TRUE,
   custom_controls = NULL,
   controls_position = c("bottom", "top")) {
 
@@ -76,6 +78,7 @@ glide <- function(...,
 
   tagList(
     tags$div(class = "shinyglide", id = id,
+            `data-keyboard` = keyboard,
             `data-next-label` = next_label,
             `data-prev-label` = previous_label,
             `data-loading-label` = loading_label,
@@ -195,12 +198,16 @@ screen <- function(...,
 #'   )
 #' )
 
-glideControls <- function(previous_content, next_content) {
-  fluidRow(
-    tags$div(class="col-xs-6",
+glideControls <- function(
+  previous_content = prevButton(),
+  next_content = nextButton()
+) {
+  tags$div(
+    style="display: flex; justify-content: space-between",
+    tags$div(
       previous_content
     ),
-    tags$div(class="col-xs-6 text-right",
+    tags$div(
       next_content
     )
   )
@@ -261,7 +268,7 @@ prevButton <- function(class = c("btn", "btn-default")) {
 #' @details
 #' These controls generate an `<a>` tag, so you can use `href` attributes.
 #'
-#' `firstButton``is only shown on the first screen of the app, and `finalButton` only
+#' `firstButton` is only shown on the first screen of the app, and `finalButton` only
 #' on the last screen.
 #'
 #' @examples
