@@ -12,10 +12,39 @@
 
 <meta name="author" content="Julien Barnier" />
 
-<meta name="date" content="2021-06-11" />
+<meta name="date" content="2023-02-15" />
 
 <title>Custom controls</title>
 
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -27,6 +56,7 @@
     </style>
 
 
+
 <style type="text/css">
   code {
     white-space: pre;
@@ -36,26 +66,27 @@
   }
 </style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(title);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -64,9 +95,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -106,13 +137,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -318,37 +356,37 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Custom controls</h1>
 <h4 class="author">Julien Barnier</h4>
-<h4 class="date">2021-06-11</h4>
+<h4 class="date">2023-02-15</h4>
 
 
 
 <div id="customizing-labels" class="section level2">
 <h2>Customizing labels</h2>
 <p>If you want to keep the default controls but just changing the default labels, you can use the <code>previous_label</code> and <code>next_label</code> arguments of <code>glide()</code>. You can pass them any HTML or shiny tags combinations. For example :</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1">ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</a>
-<a class="sourceLine" id="cb1-2" title="2">  <span class="kw">titlePanel</span>(<span class="st">&quot;Basic shinyglide app&quot;</span>),</a>
-<a class="sourceLine" id="cb1-3" title="3">  <span class="kw">glide</span>(</a>
-<a class="sourceLine" id="cb1-4" title="4">    <span class="dt">next_label =</span> <span class="kw">paste</span>(<span class="st">&quot;Next screen&quot;</span>, <span class="kw">icon</span>(<span class="st">&quot;play&quot;</span>, <span class="dt">lib =</span> <span class="st">&quot;glyphicon&quot;</span>)),</a>
-<a class="sourceLine" id="cb1-5" title="5">    <span class="dt">previous_label =</span> <span class="kw">span</span>(<span class="dt">style =</span> <span class="st">&quot;opacity: 0.5;&quot;</span>, <span class="st">&quot;Go back&quot;</span>),</a>
-<a class="sourceLine" id="cb1-6" title="6">    </a>
-<a class="sourceLine" id="cb1-7" title="7">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb1-8" title="8">      <span class="kw">p</span>(<span class="st">&quot;Please choose a value for n :&quot;</span>),</a>
-<a class="sourceLine" id="cb1-9" title="9">      <span class="kw">numericInput</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;n :&quot;</span>, <span class="dt">value =</span> <span class="dv">100</span>)</a>
-<a class="sourceLine" id="cb1-10" title="10">    ),</a>
-<a class="sourceLine" id="cb1-11" title="11">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb1-12" title="12">      <span class="kw">p</span>(<span class="st">&quot;Here is your plot :&quot;</span>),</a>
-<a class="sourceLine" id="cb1-13" title="13">      <span class="kw">plotOutput</span>(<span class="st">&quot;plot&quot;</span>)</a>
-<a class="sourceLine" id="cb1-14" title="14">    )</a>
-<a class="sourceLine" id="cb1-15" title="15">  )</a>
-<a class="sourceLine" id="cb1-16" title="16">)</a>
-<a class="sourceLine" id="cb1-17" title="17"></a>
-<a class="sourceLine" id="cb1-18" title="18">server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</a>
-<a class="sourceLine" id="cb1-19" title="19">  output<span class="op">$</span>plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({</a>
-<a class="sourceLine" id="cb1-20" title="20">    <span class="kw">hist</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>n), <span class="dt">main =</span> <span class="kw">paste</span>(<span class="st">&quot;n =&quot;</span>, input<span class="op">$</span>n))</a>
-<a class="sourceLine" id="cb1-21" title="21">  })</a>
-<a class="sourceLine" id="cb1-22" title="22">}</a>
-<a class="sourceLine" id="cb1-23" title="23"></a>
-<a class="sourceLine" id="cb1-24" title="24"><span class="kw">shinyApp</span>(ui, server)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>  <span class="kw">titlePanel</span>(<span class="st">&quot;Basic shinyglide app&quot;</span>),</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>  <span class="kw">glide</span>(</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>    <span class="dt">next_label =</span> <span class="kw">paste</span>(<span class="st">&quot;Next screen&quot;</span>, <span class="kw">icon</span>(<span class="st">&quot;play&quot;</span>, <span class="dt">lib =</span> <span class="st">&quot;glyphicon&quot;</span>)),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>    <span class="dt">previous_label =</span> <span class="kw">span</span>(<span class="dt">style =</span> <span class="st">&quot;opacity: 0.5;&quot;</span>, <span class="st">&quot;Go back&quot;</span>),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>    </span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Please choose a value for n :&quot;</span>),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a>      <span class="kw">numericInput</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;n :&quot;</span>, <span class="dt">value =</span> <span class="dv">100</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a>    ),</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Here is your plot :&quot;</span>),</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a>      <span class="kw">plotOutput</span>(<span class="st">&quot;plot&quot;</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a>    )</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true"></a>  )</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true"></a>)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true"></a>server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true"></a>  output<span class="op">$</span>plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true"></a>    <span class="kw">hist</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>n), <span class="dt">main =</span> <span class="kw">paste</span>(<span class="st">&quot;n =&quot;</span>, input<span class="op">$</span>n))</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true"></a>  })</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true"></a>}</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true"></a><span class="kw">shinyApp</span>(ui, server)</span></code></pre></div>
 <p>You can also use the <code>controls_position</code> argument to place at the <code>&quot;top&quot;</code> or at the <code>&quot;bottom&quot;</code> of the glide.</p>
 </div>
 <div id="custom-controls" class="section level2">
@@ -361,73 +399,73 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </ul>
 <p>There is no obligation to use these helpers function, you can build your own layout and controls. The only constraint is that the “back” control must have a <code>prev-screen</code> CSS class, and the “next” control a <code>next-screen</code> CSS class. Note that the labels of these controls are defined via the <code>next_label</code> and <code>previous_label</code> arguments of <code>glide()</code>.</p>
 <p>Here is an example which uses the <code>glideControls()</code> helper. Note that it is not necessary to add the required <code>prev-screen</code> class when using <code>prevButton()</code>.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">controls &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb2-2" title="2"></a>
-<a class="sourceLine" id="cb2-3" title="3">ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</a>
-<a class="sourceLine" id="cb2-4" title="4">  <span class="kw">titlePanel</span>(<span class="st">&quot;Basic shinyglide app&quot;</span>),</a>
-<a class="sourceLine" id="cb2-5" title="5">  <span class="kw">glide</span>(</a>
-<a class="sourceLine" id="cb2-6" title="6">    <span class="dt">custom_controls =</span> <span class="kw">glideControls</span>(</a>
-<a class="sourceLine" id="cb2-7" title="7">      <span class="kw">prevButton</span>(<span class="dt">class =</span> <span class="st">&quot;btn btn-warning&quot;</span>),</a>
-<a class="sourceLine" id="cb2-8" title="8">      tags<span class="op">$</span><span class="kw">button</span>(<span class="dt">class =</span> <span class="st">&quot;btn btn-success next-screen&quot;</span>)</a>
-<a class="sourceLine" id="cb2-9" title="9">    ),</a>
-<a class="sourceLine" id="cb2-10" title="10">    </a>
-<a class="sourceLine" id="cb2-11" title="11">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb2-12" title="12">      <span class="kw">p</span>(<span class="st">&quot;Please choose a value for n :&quot;</span>),</a>
-<a class="sourceLine" id="cb2-13" title="13">      <span class="kw">numericInput</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;n :&quot;</span>, <span class="dt">value =</span> <span class="dv">100</span>)</a>
-<a class="sourceLine" id="cb2-14" title="14">    ),</a>
-<a class="sourceLine" id="cb2-15" title="15">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb2-16" title="16">      <span class="kw">p</span>(<span class="st">&quot;Here is your plot :&quot;</span>),</a>
-<a class="sourceLine" id="cb2-17" title="17">      <span class="kw">plotOutput</span>(<span class="st">&quot;plot&quot;</span>)</a>
-<a class="sourceLine" id="cb2-18" title="18">    )</a>
-<a class="sourceLine" id="cb2-19" title="19">  )</a>
-<a class="sourceLine" id="cb2-20" title="20">)</a>
-<a class="sourceLine" id="cb2-21" title="21"></a>
-<a class="sourceLine" id="cb2-22" title="22">server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</a>
-<a class="sourceLine" id="cb2-23" title="23">  output<span class="op">$</span>plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({</a>
-<a class="sourceLine" id="cb2-24" title="24">    <span class="kw">hist</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>n), <span class="dt">main =</span> <span class="kw">paste</span>(<span class="st">&quot;n =&quot;</span>, input<span class="op">$</span>n))</a>
-<a class="sourceLine" id="cb2-25" title="25">  })</a>
-<a class="sourceLine" id="cb2-26" title="26">}</a>
-<a class="sourceLine" id="cb2-27" title="27"></a>
-<a class="sourceLine" id="cb2-28" title="28"><span class="kw">shinyApp</span>(ui, server)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>controls &lt;-<span class="st"> </span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>  <span class="kw">titlePanel</span>(<span class="st">&quot;Basic shinyglide app&quot;</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>  <span class="kw">glide</span>(</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>    <span class="dt">custom_controls =</span> <span class="kw">glideControls</span>(</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>      <span class="kw">prevButton</span>(<span class="dt">class =</span> <span class="st">&quot;btn btn-warning&quot;</span>),</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>      tags<span class="op">$</span><span class="kw">button</span>(<span class="dt">class =</span> <span class="st">&quot;btn btn-success next-screen&quot;</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>    ),</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>    </span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Please choose a value for n :&quot;</span>),</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a>      <span class="kw">numericInput</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;n :&quot;</span>, <span class="dt">value =</span> <span class="dv">100</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a>    ),</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Here is your plot :&quot;</span>),</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a>      <span class="kw">plotOutput</span>(<span class="st">&quot;plot&quot;</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a>    )</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a>  )</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true"></a>)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true"></a>server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true"></a>  output<span class="op">$</span>plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true"></a>    <span class="kw">hist</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>n), <span class="dt">main =</span> <span class="kw">paste</span>(<span class="st">&quot;n =&quot;</span>, input<span class="op">$</span>n))</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true"></a>  })</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true"></a>}</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true"></a><span class="kw">shinyApp</span>(ui, server)</span></code></pre></div>
 <p>And here is another example with a custom layout :</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">controls &lt;-<span class="st"> </span><span class="kw">fluidRow</span>(</a>
-<a class="sourceLine" id="cb3-2" title="2">  <span class="kw">div</span>(<span class="dt">class=</span><span class="st">&quot;col-xs-6 text-right&quot;</span>,</a>
-<a class="sourceLine" id="cb3-3" title="3">    <span class="kw">prevButton</span>(<span class="dt">class =</span> <span class="st">&quot;btn btn-warning&quot;</span>)</a>
-<a class="sourceLine" id="cb3-4" title="4">  ),</a>
-<a class="sourceLine" id="cb3-5" title="5">  <span class="kw">div</span>(<span class="dt">class=</span><span class="st">&quot;col-xs-6 text-left&quot;</span>,</a>
-<a class="sourceLine" id="cb3-6" title="6">    <span class="kw">nextButton</span>(<span class="dt">class =</span> <span class="st">&quot;btn btn-success&quot;</span>)</a>
-<a class="sourceLine" id="cb3-7" title="7">  )</a>
-<a class="sourceLine" id="cb3-8" title="8">)</a>
-<a class="sourceLine" id="cb3-9" title="9"></a>
-<a class="sourceLine" id="cb3-10" title="10">ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</a>
-<a class="sourceLine" id="cb3-11" title="11">  <span class="kw">titlePanel</span>(<span class="st">&quot;Basic shinyglide app&quot;</span>),</a>
-<a class="sourceLine" id="cb3-12" title="12">  <span class="kw">glide</span>(</a>
-<a class="sourceLine" id="cb3-13" title="13">    <span class="dt">custom_controls =</span> controls,</a>
-<a class="sourceLine" id="cb3-14" title="14">    <span class="dt">controls_position =</span> <span class="st">&quot;top&quot;</span>,</a>
-<a class="sourceLine" id="cb3-15" title="15">    <span class="dt">next_label =</span> <span class="st">&quot;Go next&quot;</span>,</a>
-<a class="sourceLine" id="cb3-16" title="16">    <span class="dt">previous_label =</span> <span class="st">&quot;Go back&quot;</span>,</a>
-<a class="sourceLine" id="cb3-17" title="17">    </a>
-<a class="sourceLine" id="cb3-18" title="18">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb3-19" title="19">      <span class="kw">p</span>(<span class="st">&quot;This is a sample custom controls app&quot;</span>)</a>
-<a class="sourceLine" id="cb3-20" title="20">    ),</a>
-<a class="sourceLine" id="cb3-21" title="21">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb3-22" title="22">      <span class="kw">p</span>(<span class="st">&quot;Please choose a value for n :&quot;</span>),</a>
-<a class="sourceLine" id="cb3-23" title="23">      <span class="kw">numericInput</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;n :&quot;</span>, <span class="dt">value =</span> <span class="dv">100</span>)</a>
-<a class="sourceLine" id="cb3-24" title="24">    ),</a>
-<a class="sourceLine" id="cb3-25" title="25">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb3-26" title="26">      <span class="kw">p</span>(<span class="st">&quot;Here is your plot :&quot;</span>),</a>
-<a class="sourceLine" id="cb3-27" title="27">      <span class="kw">plotOutput</span>(<span class="st">&quot;plot&quot;</span>)</a>
-<a class="sourceLine" id="cb3-28" title="28">    )</a>
-<a class="sourceLine" id="cb3-29" title="29">  )</a>
-<a class="sourceLine" id="cb3-30" title="30">)</a>
-<a class="sourceLine" id="cb3-31" title="31"></a>
-<a class="sourceLine" id="cb3-32" title="32">server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</a>
-<a class="sourceLine" id="cb3-33" title="33">  output<span class="op">$</span>plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({</a>
-<a class="sourceLine" id="cb3-34" title="34">    <span class="kw">hist</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>n), <span class="dt">main =</span> <span class="kw">paste</span>(<span class="st">&quot;n =&quot;</span>, input<span class="op">$</span>n))</a>
-<a class="sourceLine" id="cb3-35" title="35">  })</a>
-<a class="sourceLine" id="cb3-36" title="36">}</a>
-<a class="sourceLine" id="cb3-37" title="37"></a>
-<a class="sourceLine" id="cb3-38" title="38"><span class="kw">shinyApp</span>(ui, server)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>controls &lt;-<span class="st"> </span><span class="kw">fluidRow</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>  <span class="kw">div</span>(<span class="dt">class=</span><span class="st">&quot;col-xs-6 text-right&quot;</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>    <span class="kw">prevButton</span>(<span class="dt">class =</span> <span class="st">&quot;btn btn-warning&quot;</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>  ),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>  <span class="kw">div</span>(<span class="dt">class=</span><span class="st">&quot;col-xs-6 text-left&quot;</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>    <span class="kw">nextButton</span>(<span class="dt">class =</span> <span class="st">&quot;btn btn-success&quot;</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>  )</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a>  <span class="kw">titlePanel</span>(<span class="st">&quot;Basic shinyglide app&quot;</span>),</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a>  <span class="kw">glide</span>(</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a>    <span class="dt">custom_controls =</span> controls,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a>    <span class="dt">controls_position =</span> <span class="st">&quot;top&quot;</span>,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a>    <span class="dt">next_label =</span> <span class="st">&quot;Go next&quot;</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a>    <span class="dt">previous_label =</span> <span class="st">&quot;Go back&quot;</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a>    </span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;This is a sample custom controls app&quot;</span>)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true"></a>    ),</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Please choose a value for n :&quot;</span>),</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true"></a>      <span class="kw">numericInput</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;n :&quot;</span>, <span class="dt">value =</span> <span class="dv">100</span>)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true"></a>    ),</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Here is your plot :&quot;</span>),</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true"></a>      <span class="kw">plotOutput</span>(<span class="st">&quot;plot&quot;</span>)</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true"></a>    )</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true"></a>  )</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true"></a>)</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true"></a></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true"></a>server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true"></a>  output<span class="op">$</span>plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true"></a>    <span class="kw">hist</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>n), <span class="dt">main =</span> <span class="kw">paste</span>(<span class="st">&quot;n =&quot;</span>, input<span class="op">$</span>n))</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true"></a>  })</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true"></a>}</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true"></a></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true"></a><span class="kw">shinyApp</span>(ui, server)</span></code></pre></div>
 <p>You can also take a look at the <a href="https://data.nozav.org/app/shinyglide/04_custom_controls/">sample custom controls app</a> and at its <a href="https://github.com/juba/shinyglide/blob/master/inst/examples/04_custom_controls/app.R">source code</a> to see a way to implement a rather different controls styling and positioning.</p>
 </div>
 <div id="first-and-last-buttons" class="section level2">
@@ -435,67 +473,67 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>When using custom controls, you can define controls that will be shown only on the first and last screens. In general they are used in place of the <em>Back</em> and <em>Next</em> controls which are hidden on those screens.</p>
 <p>To do this, either manually define an element with a <code>first-screen</code> or <code>last-screen</code> CSS class, or use one of the two <code>firstButton()</code> or <code>lastButton()</code> helper functions.</p>
 <p>Here is an example :</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">controls &lt;-<span class="st"> </span><span class="kw">glideControls</span>(</a>
-<a class="sourceLine" id="cb4-2" title="2">  <span class="kw">list</span>(</a>
-<a class="sourceLine" id="cb4-3" title="3">    <span class="kw">prevButton</span>(<span class="dt">class =</span> <span class="st">&quot;btn btn-warning&quot;</span>),</a>
-<a class="sourceLine" id="cb4-4" title="4">    <span class="kw">firstButton</span>(<span class="dt">class =</span> <span class="st">&quot;btn btn-danger&quot;</span>, <span class="st">&quot;First screen !&quot;</span>)</a>
-<a class="sourceLine" id="cb4-5" title="5">  ),</a>
-<a class="sourceLine" id="cb4-6" title="6">  <span class="kw">list</span>(</a>
-<a class="sourceLine" id="cb4-7" title="7">    <span class="kw">nextButton</span>(),</a>
-<a class="sourceLine" id="cb4-8" title="8">    <span class="kw">lastButton</span>(</a>
-<a class="sourceLine" id="cb4-9" title="9">      <span class="dt">class =</span> <span class="st">&quot;btn btn-success&quot;</span>, </a>
-<a class="sourceLine" id="cb4-10" title="10">      <span class="kw">HTML</span>(<span class="kw">paste</span>(<span class="st">&quot;Last screen...&quot;</span>, <span class="kw">icon</span>(<span class="st">&quot;ok&quot;</span>, <span class="dt">lib =</span> <span class="st">&quot;glyphicon&quot;</span>)))</a>
-<a class="sourceLine" id="cb4-11" title="11">    )</a>
-<a class="sourceLine" id="cb4-12" title="12">  )</a>
-<a class="sourceLine" id="cb4-13" title="13">)</a>
-<a class="sourceLine" id="cb4-14" title="14"></a>
-<a class="sourceLine" id="cb4-15" title="15">ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</a>
-<a class="sourceLine" id="cb4-16" title="16">  <span class="kw">titlePanel</span>(<span class="st">&quot;Basic shinyglide app&quot;</span>),</a>
-<a class="sourceLine" id="cb4-17" title="17">  <span class="kw">glide</span>(</a>
-<a class="sourceLine" id="cb4-18" title="18">    <span class="dt">custom_controls =</span> controls,</a>
-<a class="sourceLine" id="cb4-19" title="19">    </a>
-<a class="sourceLine" id="cb4-20" title="20">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb4-21" title="21">      <span class="kw">p</span>(<span class="st">&quot;Please choose a value for n :&quot;</span>),</a>
-<a class="sourceLine" id="cb4-22" title="22">      <span class="kw">numericInput</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;n :&quot;</span>, <span class="dt">value =</span> <span class="dv">100</span>)</a>
-<a class="sourceLine" id="cb4-23" title="23">    ),</a>
-<a class="sourceLine" id="cb4-24" title="24">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb4-25" title="25">      <span class="kw">p</span>(<span class="st">&quot;Here is your plot :&quot;</span>),</a>
-<a class="sourceLine" id="cb4-26" title="26">      <span class="kw">plotOutput</span>(<span class="st">&quot;plot&quot;</span>)</a>
-<a class="sourceLine" id="cb4-27" title="27">    )</a>
-<a class="sourceLine" id="cb4-28" title="28">  )</a>
-<a class="sourceLine" id="cb4-29" title="29">)</a>
-<a class="sourceLine" id="cb4-30" title="30"></a>
-<a class="sourceLine" id="cb4-31" title="31">server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</a>
-<a class="sourceLine" id="cb4-32" title="32">  output<span class="op">$</span>plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({</a>
-<a class="sourceLine" id="cb4-33" title="33">    <span class="kw">hist</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>n), <span class="dt">main =</span> <span class="kw">paste</span>(<span class="st">&quot;n =&quot;</span>, input<span class="op">$</span>n))</a>
-<a class="sourceLine" id="cb4-34" title="34">  })</a>
-<a class="sourceLine" id="cb4-35" title="35">}</a>
-<a class="sourceLine" id="cb4-36" title="36"></a>
-<a class="sourceLine" id="cb4-37" title="37"><span class="kw">shinyApp</span>(ui, server)</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>controls &lt;-<span class="st"> </span><span class="kw">glideControls</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>  <span class="kw">list</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>    <span class="kw">prevButton</span>(<span class="dt">class =</span> <span class="st">&quot;btn btn-warning&quot;</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>    <span class="kw">firstButton</span>(<span class="dt">class =</span> <span class="st">&quot;btn btn-danger&quot;</span>, <span class="st">&quot;First screen !&quot;</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a>  ),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a>  <span class="kw">list</span>(</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a>    <span class="kw">nextButton</span>(),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a>    <span class="kw">lastButton</span>(</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a>      <span class="dt">class =</span> <span class="st">&quot;btn btn-success&quot;</span>, </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true"></a>      <span class="kw">HTML</span>(<span class="kw">paste</span>(<span class="st">&quot;Last screen...&quot;</span>, <span class="kw">icon</span>(<span class="st">&quot;ok&quot;</span>, <span class="dt">lib =</span> <span class="st">&quot;glyphicon&quot;</span>)))</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true"></a>    )</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true"></a>  )</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true"></a>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true"></a>ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true"></a>  <span class="kw">titlePanel</span>(<span class="st">&quot;Basic shinyglide app&quot;</span>),</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true"></a>  <span class="kw">glide</span>(</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true"></a>    <span class="dt">custom_controls =</span> controls,</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true"></a>    </span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Please choose a value for n :&quot;</span>),</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true"></a>      <span class="kw">numericInput</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;n :&quot;</span>, <span class="dt">value =</span> <span class="dv">100</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true"></a>    ),</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Here is your plot :&quot;</span>),</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true"></a>      <span class="kw">plotOutput</span>(<span class="st">&quot;plot&quot;</span>)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true"></a>    )</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true"></a>  )</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true"></a>)</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true"></a></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true"></a>server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true"></a>  output<span class="op">$</span>plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true"></a>    <span class="kw">hist</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>n), <span class="dt">main =</span> <span class="kw">paste</span>(<span class="st">&quot;n =&quot;</span>, input<span class="op">$</span>n))</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true"></a>  })</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true"></a>}</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true"></a></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true"></a><span class="kw">shinyApp</span>(ui, server)</span></code></pre></div>
 </div>
 <div id="custom-controls-in-modal" class="section level2">
 <h2>Custom controls in modal</h2>
 <p>You can use a glide inside a Shiny modal dialog. This can be useful to create a sort of “assistant-like” interface is the modal is automatically shown at startup.</p>
 <p>In this case, when defining the custom modals for your modal glide, it is recommended to create a control with a `<code>data-dismiss</code>=“modal”` attribute in order to close the modal at the start or at the end of the glide.</p>
 <p>Here is an example modal controls :</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">modal_controls &lt;-<span class="st"> </span><span class="kw">glideControls</span>(</a>
-<a class="sourceLine" id="cb5-2" title="2">      <span class="kw">list</span>(</a>
-<a class="sourceLine" id="cb5-3" title="3">        <span class="kw">prevButton</span>(),</a>
-<a class="sourceLine" id="cb5-4" title="4">        <span class="kw">firstButton</span>(</a>
-<a class="sourceLine" id="cb5-5" title="5">          <span class="dt">class =</span> <span class="st">&quot;btn btn-danger&quot;</span>,</a>
-<a class="sourceLine" id="cb5-6" title="6">          <span class="st">`</span><span class="dt">data-dismiss</span><span class="st">`</span>=<span class="st">&quot;modal&quot;</span>,</a>
-<a class="sourceLine" id="cb5-7" title="7">          <span class="st">&quot;No, thanks !&quot;</span></a>
-<a class="sourceLine" id="cb5-8" title="8">        )</a>
-<a class="sourceLine" id="cb5-9" title="9">      ),</a>
-<a class="sourceLine" id="cb5-10" title="10">      <span class="kw">list</span>(</a>
-<a class="sourceLine" id="cb5-11" title="11">        <span class="kw">nextButton</span>(),</a>
-<a class="sourceLine" id="cb5-12" title="12">        <span class="kw">lastButton</span>(</a>
-<a class="sourceLine" id="cb5-13" title="13">          <span class="dt">class =</span> <span class="st">&quot;btn btn-success&quot;</span>,</a>
-<a class="sourceLine" id="cb5-14" title="14">          <span class="st">`</span><span class="dt">data-dismiss</span><span class="st">`</span>=<span class="st">&quot;modal&quot;</span>,</a>
-<a class="sourceLine" id="cb5-15" title="15">          <span class="st">&quot;Done&quot;</span></a>
-<a class="sourceLine" id="cb5-16" title="16">      )</a>
-<a class="sourceLine" id="cb5-17" title="17">    )</a>
-<a class="sourceLine" id="cb5-18" title="18">)</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>modal_controls &lt;-<span class="st"> </span><span class="kw">glideControls</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>      <span class="kw">list</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>        <span class="kw">prevButton</span>(),</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>        <span class="kw">firstButton</span>(</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>          <span class="dt">class =</span> <span class="st">&quot;btn btn-danger&quot;</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>          <span class="st">`</span><span class="dt">data-dismiss</span><span class="st">`</span>=<span class="st">&quot;modal&quot;</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>          <span class="st">&quot;No, thanks !&quot;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>        )</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>      ),</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a>      <span class="kw">list</span>(</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>        <span class="kw">nextButton</span>(),</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a>        <span class="kw">lastButton</span>(</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a>          <span class="dt">class =</span> <span class="st">&quot;btn btn-success&quot;</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a>          <span class="st">`</span><span class="dt">data-dismiss</span><span class="st">`</span>=<span class="st">&quot;modal&quot;</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a>          <span class="st">&quot;Done&quot;</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a>      )</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a>    )</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a>)</span></code></pre></div>
 <p>You can take a look at the <a href="https://data.nozav.org/app/shinyglide/03_modal/">sample modal app</a> and at its <a href="https://github.com/juba/shinyglide/blob/master/inst/examples/03_modal/app.R">source code</a> to see a full way to implement it.</p>
 </div>
 

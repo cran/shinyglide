@@ -12,10 +12,39 @@
 
 <meta name="author" content="Julien Barnier" />
 
-<meta name="date" content="2021-06-11" />
+<meta name="date" content="2023-02-15" />
 
 <title>Conditional controls and screen output</title>
 
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -27,6 +56,7 @@
     </style>
 
 
+
 <style type="text/css">
   code {
     white-space: pre;
@@ -36,26 +66,27 @@
   }
 </style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(title);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -64,9 +95,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -106,13 +137,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -318,7 +356,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Conditional controls and screen output</h1>
 <h4 class="author">Julien Barnier</h4>
-<h4 class="date">2021-06-11</h4>
+<h4 class="date">2023-02-15</h4>
 
 
 
@@ -326,113 +364,113 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h2>Conditional controls</h2>
 <p>Sometimes you don’t want your user to be able to go to the next screen if a condition based on inputs is not met. This can be done in <code>shinyglide</code> with the <code>next_condition</code> argument of the <code>screen</code> function. This option takes exactly the same syntax has the one used in <code>shiny::conditionalPanel</code>.</p>
 <p>For example, in the following app, the <em>Next</em> button is disabled until the <em>n</em> value is greater then zero :</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1">ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</a>
-<a class="sourceLine" id="cb1-2" title="2">  <span class="kw">glide</span>(</a>
-<a class="sourceLine" id="cb1-3" title="3">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb1-4" title="4">      <span class="dt">next_condition =</span> <span class="st">&quot;input.n &gt; 0&quot;</span>,</a>
-<a class="sourceLine" id="cb1-5" title="5">      </a>
-<a class="sourceLine" id="cb1-6" title="6">      <span class="kw">p</span>(<span class="st">&quot;Please choose a value for n :&quot;</span>),</a>
-<a class="sourceLine" id="cb1-7" title="7">      <span class="kw">numericInput</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;n :&quot;</span>, <span class="dt">value =</span> <span class="dv">0</span>)</a>
-<a class="sourceLine" id="cb1-8" title="8">    ),</a>
-<a class="sourceLine" id="cb1-9" title="9">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb1-10" title="10">      <span class="kw">p</span>(<span class="st">&quot;Here is your plot :&quot;</span>),</a>
-<a class="sourceLine" id="cb1-11" title="11">      <span class="kw">plotOutput</span>(<span class="st">&quot;plot&quot;</span>)</a>
-<a class="sourceLine" id="cb1-12" title="12">    )</a>
-<a class="sourceLine" id="cb1-13" title="13">  )</a>
-<a class="sourceLine" id="cb1-14" title="14">)</a>
-<a class="sourceLine" id="cb1-15" title="15"></a>
-<a class="sourceLine" id="cb1-16" title="16">server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</a>
-<a class="sourceLine" id="cb1-17" title="17">  output<span class="op">$</span>plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({</a>
-<a class="sourceLine" id="cb1-18" title="18">    <span class="kw">hist</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>n), <span class="dt">main =</span> <span class="kw">paste</span>(<span class="st">&quot;n =&quot;</span>, input<span class="op">$</span>n))</a>
-<a class="sourceLine" id="cb1-19" title="19">  })</a>
-<a class="sourceLine" id="cb1-20" title="20">}</a>
-<a class="sourceLine" id="cb1-21" title="21"></a>
-<a class="sourceLine" id="cb1-22" title="22"><span class="kw">shinyApp</span>(ui, server)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>  <span class="kw">glide</span>(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>      <span class="dt">next_condition =</span> <span class="st">&quot;input.n &gt; 0&quot;</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>      </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Please choose a value for n :&quot;</span>),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a>      <span class="kw">numericInput</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;n :&quot;</span>, <span class="dt">value =</span> <span class="dv">0</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a>    ),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Here is your plot :&quot;</span>),</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a>      <span class="kw">plotOutput</span>(<span class="st">&quot;plot&quot;</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a>    )</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a>  )</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true"></a>server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true"></a>  output<span class="op">$</span>plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true"></a>    <span class="kw">hist</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>n), <span class="dt">main =</span> <span class="kw">paste</span>(<span class="st">&quot;n =&quot;</span>, input<span class="op">$</span>n))</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true"></a>  })</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true"></a>}</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true"></a><span class="kw">shinyApp</span>(ui, server)</span></code></pre></div>
 <p>You can do the same for the <em>Back</em> button with the <code>previous_condition</code> argument.</p>
 <p>By default the button is disabled when the condition is not met (more precisely, the button gets a <code>disabled = &quot;disabled&quot;</code> argument and a <code>disabled</code> CSS class). If you prefer to hide it entirely, you can add <code>disable_type = &quot;hide&quot;</code> to your <code>glide()</code> definition :</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</a>
-<a class="sourceLine" id="cb2-2" title="2">  <span class="kw">glide</span>(</a>
-<a class="sourceLine" id="cb2-3" title="3">    <span class="dt">disable_type =</span> <span class="st">&quot;hide&quot;</span>,</a>
-<a class="sourceLine" id="cb2-4" title="4">    </a>
-<a class="sourceLine" id="cb2-5" title="5">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb2-6" title="6">      <span class="dt">next_condition =</span> <span class="st">&quot;input.n &gt; 0&quot;</span>,</a>
-<a class="sourceLine" id="cb2-7" title="7">      </a>
-<a class="sourceLine" id="cb2-8" title="8">      <span class="kw">p</span>(<span class="st">&quot;Please choose a value for n :&quot;</span>),</a>
-<a class="sourceLine" id="cb2-9" title="9">      <span class="kw">numericInput</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;n :&quot;</span>, <span class="dt">value =</span> <span class="dv">0</span>)</a>
-<a class="sourceLine" id="cb2-10" title="10">    ),</a>
-<a class="sourceLine" id="cb2-11" title="11">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb2-12" title="12">      <span class="kw">p</span>(<span class="st">&quot;Here is your plot :&quot;</span>),</a>
-<a class="sourceLine" id="cb2-13" title="13">      <span class="kw">plotOutput</span>(<span class="st">&quot;plot&quot;</span>)</a>
-<a class="sourceLine" id="cb2-14" title="14">    )</a>
-<a class="sourceLine" id="cb2-15" title="15">  )</a>
-<a class="sourceLine" id="cb2-16" title="16">)</a>
-<a class="sourceLine" id="cb2-17" title="17"></a>
-<a class="sourceLine" id="cb2-18" title="18">server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</a>
-<a class="sourceLine" id="cb2-19" title="19">  output<span class="op">$</span>plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({</a>
-<a class="sourceLine" id="cb2-20" title="20">    <span class="kw">hist</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>n), <span class="dt">main =</span> <span class="kw">paste</span>(<span class="st">&quot;n =&quot;</span>, input<span class="op">$</span>n))</a>
-<a class="sourceLine" id="cb2-21" title="21">  })</a>
-<a class="sourceLine" id="cb2-22" title="22">}</a>
-<a class="sourceLine" id="cb2-23" title="23"></a>
-<a class="sourceLine" id="cb2-24" title="24"><span class="kw">shinyApp</span>(ui, server)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>  <span class="kw">glide</span>(</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>    <span class="dt">disable_type =</span> <span class="st">&quot;hide&quot;</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>    </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>      <span class="dt">next_condition =</span> <span class="st">&quot;input.n &gt; 0&quot;</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>      </span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Please choose a value for n :&quot;</span>),</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>      <span class="kw">numericInput</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;n :&quot;</span>, <span class="dt">value =</span> <span class="dv">0</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>    ),</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Here is your plot :&quot;</span>),</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a>      <span class="kw">plotOutput</span>(<span class="st">&quot;plot&quot;</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a>    )</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a>  )</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a>server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a>  output<span class="op">$</span>plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true"></a>    <span class="kw">hist</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>n), <span class="dt">main =</span> <span class="kw">paste</span>(<span class="st">&quot;n =&quot;</span>, input<span class="op">$</span>n))</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true"></a>  })</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true"></a>}</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true"></a><span class="kw">shinyApp</span>(ui, server)</span></code></pre></div>
 </div>
 <div id="screen-output" class="section level2">
 <h2>Screen output</h2>
 <p>Sometimes you want to show a screen only if certain conditions are met based on inputs. For example, if a user chooses a value which is not present in a dataset, you would like to display a specific screen to alert him.</p>
 <p>This is possible by using a <code>screenOutput</code> call in you app UI, associated to a <code>renderUI</code> in your app server. If <code>renderUI</code> returns <code>NULL</code>, the screen will be hidden.</p>
 <p>Here is an example :</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</a>
-<a class="sourceLine" id="cb3-2" title="2">  <span class="kw">glide</span>(</a>
-<a class="sourceLine" id="cb3-3" title="3">    <span class="dt">disable_type =</span> <span class="st">&quot;hide&quot;</span>,</a>
-<a class="sourceLine" id="cb3-4" title="4">    </a>
-<a class="sourceLine" id="cb3-5" title="5">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb3-6" title="6">      <span class="kw">p</span>(<span class="st">&quot;Do you want to see the next screen ?&quot;</span>),</a>
-<a class="sourceLine" id="cb3-7" title="7">      <span class="kw">checkboxInput</span>(<span class="st">&quot;check&quot;</span>, <span class="st">&quot;Yes, of course !&quot;</span>, <span class="dt">value =</span> <span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb3-8" title="8">    ),</a>
-<a class="sourceLine" id="cb3-9" title="9">    <span class="kw">screenOutput</span>(<span class="st">&quot;check_screen&quot;</span>),</a>
-<a class="sourceLine" id="cb3-10" title="10">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb3-11" title="11">      <span class="kw">p</span>(<span class="st">&quot;And this is the last screen&quot;</span>)</a>
-<a class="sourceLine" id="cb3-12" title="12">    )</a>
-<a class="sourceLine" id="cb3-13" title="13">  )</a>
-<a class="sourceLine" id="cb3-14" title="14">)</a>
-<a class="sourceLine" id="cb3-15" title="15"></a>
-<a class="sourceLine" id="cb3-16" title="16">server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</a>
-<a class="sourceLine" id="cb3-17" title="17">  output<span class="op">$</span>check_screen &lt;-<span class="st"> </span><span class="kw">renderUI</span>({</a>
-<a class="sourceLine" id="cb3-18" title="18">    <span class="cf">if</span>(<span class="op">!</span>input<span class="op">$</span>check) <span class="kw">return</span>(<span class="ot">NULL</span>)</a>
-<a class="sourceLine" id="cb3-19" title="19">    <span class="kw">p</span>(<span class="st">&quot;Here it is !&quot;</span>)</a>
-<a class="sourceLine" id="cb3-20" title="20">  })</a>
-<a class="sourceLine" id="cb3-21" title="21">  <span class="kw">outputOptions</span>(output, <span class="st">&quot;check_screen&quot;</span>, <span class="dt">suspendWhenHidden =</span> <span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb3-22" title="22">}</a>
-<a class="sourceLine" id="cb3-23" title="23"></a>
-<a class="sourceLine" id="cb3-24" title="24"><span class="kw">shinyApp</span>(ui, server)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>  <span class="kw">glide</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>    <span class="dt">disable_type =</span> <span class="st">&quot;hide&quot;</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>    </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Do you want to see the next screen ?&quot;</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>      <span class="kw">checkboxInput</span>(<span class="st">&quot;check&quot;</span>, <span class="st">&quot;Yes, of course !&quot;</span>, <span class="dt">value =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>    ),</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a>    <span class="kw">screenOutput</span>(<span class="st">&quot;check_screen&quot;</span>),</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;And this is the last screen&quot;</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a>    )</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a>  )</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a>server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a>  output<span class="op">$</span>check_screen &lt;-<span class="st"> </span><span class="kw">renderUI</span>({</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true"></a>    <span class="cf">if</span>(<span class="op">!</span>input<span class="op">$</span>check) <span class="kw">return</span>(<span class="ot">NULL</span>)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true"></a>    <span class="kw">p</span>(<span class="st">&quot;Here it is !&quot;</span>)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true"></a>  })</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true"></a>  <span class="kw">outputOptions</span>(output, <span class="st">&quot;check_screen&quot;</span>, <span class="dt">suspendWhenHidden =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true"></a>}</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true"></a><span class="kw">shinyApp</span>(ui, server)</span></code></pre></div>
 <p><strong>Important :</strong> for the <code>screenOutput</code> to work, it is mandatory to add the following line in your app server :</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">outputOptions</span>(output, <span class="st">&quot;your_screen_id&quot;</span>, <span class="dt">suspendWhenHidden =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">outputOptions</span>(output, <span class="st">&quot;your_screen_id&quot;</span>, <span class="dt">suspendWhenHidden =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
 <p>Otherwise, it won’t be updated when hidden.</p>
 <p>Sometimes the <code>screenOutput</code> computation takes some time. In these cases, with the default controls, the <em>Next</em> button is disabled and a <em>Loading</em> message is shown until the next screens computations is done. You can see it in the following example, which is the same as the previous one but with an articial 2 seconds waiting time :</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</a>
-<a class="sourceLine" id="cb5-2" title="2">  <span class="kw">glide</span>(</a>
-<a class="sourceLine" id="cb5-3" title="3">    <span class="dt">disable_type =</span> <span class="st">&quot;hide&quot;</span>,</a>
-<a class="sourceLine" id="cb5-4" title="4">    </a>
-<a class="sourceLine" id="cb5-5" title="5">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb5-6" title="6">      <span class="kw">p</span>(<span class="st">&quot;Do you want to see the next screen ?&quot;</span>),</a>
-<a class="sourceLine" id="cb5-7" title="7">      <span class="kw">checkboxInput</span>(<span class="st">&quot;check&quot;</span>, <span class="st">&quot;Yes, of course !&quot;</span>, <span class="dt">value =</span> <span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb5-8" title="8">    ),</a>
-<a class="sourceLine" id="cb5-9" title="9">    <span class="kw">screenOutput</span>(<span class="st">&quot;check_screen&quot;</span>),</a>
-<a class="sourceLine" id="cb5-10" title="10">    <span class="kw">screen</span>(</a>
-<a class="sourceLine" id="cb5-11" title="11">      <span class="kw">p</span>(<span class="st">&quot;And this is the last screen&quot;</span>)</a>
-<a class="sourceLine" id="cb5-12" title="12">    )</a>
-<a class="sourceLine" id="cb5-13" title="13">  )</a>
-<a class="sourceLine" id="cb5-14" title="14">)</a>
-<a class="sourceLine" id="cb5-15" title="15"></a>
-<a class="sourceLine" id="cb5-16" title="16">server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</a>
-<a class="sourceLine" id="cb5-17" title="17">  output<span class="op">$</span>check_screen &lt;-<span class="st"> </span><span class="kw">renderUI</span>({</a>
-<a class="sourceLine" id="cb5-18" title="18">    <span class="kw">Sys.sleep</span>(<span class="dv">2</span>)</a>
-<a class="sourceLine" id="cb5-19" title="19">    <span class="cf">if</span>(<span class="op">!</span>input<span class="op">$</span>check) <span class="kw">return</span>(<span class="ot">NULL</span>)</a>
-<a class="sourceLine" id="cb5-20" title="20">    <span class="kw">p</span>(<span class="st">&quot;Here it is !&quot;</span>)</a>
-<a class="sourceLine" id="cb5-21" title="21">  })</a>
-<a class="sourceLine" id="cb5-22" title="22">  <span class="kw">outputOptions</span>(output, <span class="st">&quot;check_screen&quot;</span>, <span class="dt">suspendWhenHidden =</span> <span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb5-23" title="23">}</a>
-<a class="sourceLine" id="cb5-24" title="24"></a>
-<a class="sourceLine" id="cb5-25" title="25"><span class="kw">shinyApp</span>(ui, server)</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>  <span class="kw">glide</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>    <span class="dt">disable_type =</span> <span class="st">&quot;hide&quot;</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>    </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;Do you want to see the next screen ?&quot;</span>),</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>      <span class="kw">checkboxInput</span>(<span class="st">&quot;check&quot;</span>, <span class="st">&quot;Yes, of course !&quot;</span>, <span class="dt">value =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>    ),</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>    <span class="kw">screenOutput</span>(<span class="st">&quot;check_screen&quot;</span>),</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a>    <span class="kw">screen</span>(</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>      <span class="kw">p</span>(<span class="st">&quot;And this is the last screen&quot;</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a>    )</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a>  )</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a>)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a>server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output, session) {</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a>  output<span class="op">$</span>check_screen &lt;-<span class="st"> </span><span class="kw">renderUI</span>({</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a>    <span class="kw">Sys.sleep</span>(<span class="dv">2</span>)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a>    <span class="cf">if</span>(<span class="op">!</span>input<span class="op">$</span>check) <span class="kw">return</span>(<span class="ot">NULL</span>)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a>    <span class="kw">p</span>(<span class="st">&quot;Here it is !&quot;</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a>  })</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a>  <span class="kw">outputOptions</span>(output, <span class="st">&quot;check_screen&quot;</span>, <span class="dt">suspendWhenHidden =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true"></a>}</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true"></a><span class="kw">shinyApp</span>(ui, server)</span></code></pre></div>
 <div id="customizing-loading" class="section level3">
 <h3>Customizing loading</h3>
 <p>You can customize the loading label and animation with options passed to <code>glide()</code> :</p>
